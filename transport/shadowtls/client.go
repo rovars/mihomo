@@ -186,7 +186,7 @@ func uTLSHandshakeFunc(config *tls.Config, clientFingerprint string, version int
 		if fingerprint, ok := tlsC.GetFingerprint(clientFingerprint); ok {
 			tlsConn := tlsC.UClient(conn, tlsConfig, fingerprint)
 			if slices.Equal(tlsConfig.NextProtos, WsALPN) {
-				if err := tlsC.BuildWebsocketHandshakeState(tlsConn); err != nil {
+				if err := tlsC.BuildWebsocketHandshakeState(tlsConn, tlsConfig.NextProtos); err != nil {
 					return err
 				}
 			}
