@@ -252,27 +252,22 @@ func UConfig(config *tls.Config) *utls.Config {
 	return cfg
 }
 
-// BuildWebsocketHandshakeState it will only send http/1.1 in its ALPN.
+// BuildWebsocketHandshakeState ensures the ALPN extension in the ClientHello
+// contains the user-configured protocols.
 // Copy from https://github.com/XTLS/Xray-core/blob/main/transport/internet/tls/tls.go
-func BuildWebsocketHandshakeState(c *UConn) error {
-	// Build the handshake state. This will apply every variable of the TLS of the
-	// fingerprint in the UConn
+func BuildWebsocketHandshakeState(c *UConn, alpn []string) error {
+	if len(alpn) == 0 {
+		alpn = []string{"http/1.1"}
+	}
 	if err := c.BuildHandshakeState(); err != nil {
 		return err
 	}
-	// Iterate over extensions and check for utls.ALPNExtension
-	hasALPNExtension := false
 	for _, extension := range c.Extensions {
-		if alpn, ok := extension.(*utls.ALPNExtension); ok {
-			hasALPNExtension = true
-			alpn.AlpnProtocols = []string{"http/1.1"}
+		if alpnExt, ok := extension.(*utls.ALPNExtension); ok {
+			alpnExt.AlpnProtocols = alpn
 			break
 		}
 	}
-	if !hasALPNExtension { // Append extension if doesn't exists
-		c.Extensions = append(c.Extensions, &utls.ALPNExtension{AlpnProtocols: []string{"http/1.1"}})
-	}
-	// Rebuild the client hello
 	if err := c.BuildHandshakeState(); err != nil {
 		return err
 	}

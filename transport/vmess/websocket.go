@@ -369,7 +369,7 @@ func streamWebsocketConn(ctx context.Context, conn net.Conn, c *WebsocketConfig,
 				return nil, err
 			}
 			tlsConn := tlsC.UClient(conn, tlsConfig, clientFingerprint)
-			if err = tlsC.BuildWebsocketHandshakeState(tlsConn); err != nil {
+			if err = tlsC.BuildWebsocketHandshakeState(tlsConn, config.NextProtos); err != nil {
 				return nil, fmt.Errorf("parse url %s error: %w", c.Path, err)
 			}
 			err = tlsConn.HandshakeContext(ctx)

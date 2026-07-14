@@ -191,7 +191,12 @@ func (v *Vless) StreamConnContext(ctx context.Context, c net.Conn, metadata *C.M
 					Certificate:       v.option.Certificate,
 					PrivateKey:        v.option.PrivateKey,
 					ClientFingerprint: v.option.ClientFingerprint,
-					NextProtos:        []string{"http/1.1"},
+					NextProtos: func() []string {
+						if v.option.ALPN != nil {
+							return v.option.ALPN
+						}
+						return []string{"http/1.1"}
+					}(),
 					ShadowTLS:         v.shadowTLSConfig,
 					Restls:            v.restlsConfig,
 					JLS:               v.jlsConfig,
@@ -205,7 +210,12 @@ func (v *Vless) StreamConnContext(ctx context.Context, c net.Conn, metadata *C.M
 					TLSConfig: &tls.Config{
 						ServerName:         serverName,
 						InsecureSkipVerify: v.option.SkipCertVerify,
-						NextProtos:         []string{"http/1.1"},
+						NextProtos: func() []string {
+							if v.option.ALPN != nil {
+								return v.option.ALPN
+							}
+							return []string{"http/1.1"}
+						}(),
 					},
 					Fingerprint:    v.option.Fingerprint,
 					NameCertVerify: v.option.NameCertVerify,
